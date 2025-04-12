@@ -1,0 +1,35 @@
+@startuml
+!define RECTANGLE class
+
+RECTANGLE Browser {
+  :User Interface (JS/HTML);
+  :STOMP over WebSocket;
+}
+
+RECTANGLE WebSocketEndpoint {
+  :/websocketApp;
+  :SockJS STOMP Endpoint;
+}
+
+RECTANGLE SpringBootApp {
+  :WebSocketChatController;
+  :WebSocketChatEventListener;
+  :WebSocketChatConfig;
+}
+
+RECTANGLE MessageBroker {
+  :RabbitMQ;
+  :STOMP Broker Relay;
+}
+
+Browser --> WebSocketEndpoint : Connect via SockJS
+WebSocketEndpoint --> SpringBootApp : Route "/app/chat.sendMessage"
+SpringBootApp --> MessageBroker : Send to "/topic/larrykin"
+MessageBroker --> SpringBootApp : Broadcast to subscribers
+SpringBootApp --> WebSocketEndpoint : Send to "/topic/larrykin"
+WebSocketEndpoint --> Browser : Message received
+
+Browser --> WebSocketEndpoint : "/app/chat.newUser"
+WebSocketEndpoint --> SpringBootApp : newUser()
+SpringBootApp --> MessageBroker : Notify "/topic/larrykin"
+@enduml

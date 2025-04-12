@@ -1,0 +1,15 @@
+@startuml
+actor NewUser
+participant "Browser (STOMP Client)" as Browser
+participant "WebSocket Endpoint" as Endpoint
+participant "WebSocketChatController" as Controller
+participant "RabbitMQ (STOMP Broker)" as Broker
+participant "All Clients" as Clients
+
+NewUser -> Browser : Connect to WebSocket
+Browser -> Endpoint : STOMP SEND /app/chat.newUser
+Endpoint -> Controller : @MessageMapping("/chat.newUser")
+Controller -> Broker : @SendTo("/topic/larrykin")
+Broker -> Clients : Broadcast "New User Joined"
+Clients -> NewUser : Display join confirmation
+@enduml
